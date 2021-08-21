@@ -1,4 +1,4 @@
-package thanh.truong.jetpackcomposedemo
+package thanh.truong.jetpackcomposedemo.ui.model
 
 import androidx.annotation.DrawableRes
 

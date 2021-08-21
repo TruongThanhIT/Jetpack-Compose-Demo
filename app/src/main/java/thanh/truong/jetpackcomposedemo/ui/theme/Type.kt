@@ -1,4 +1,4 @@
-package thanh.truong.jetpackcomposedemo.ui
+package thanh.truong.jetpackcomposedemo.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.graphics.Color
