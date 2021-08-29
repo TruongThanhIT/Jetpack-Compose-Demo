@@ -2,14 +2,12 @@ package thanh.truong.jetpackcomposedemo.ui
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,66 +32,75 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import kotlinx.coroutines.launch
 import thanh.truong.jetpackcomposedemo.R
 import thanh.truong.jetpackcomposedemo.ui.model.User
+import thanh.truong.jetpackcomposedemo.ui.navigation.DemoNavHost
 import thanh.truong.jetpackcomposedemo.ui.theme.JetpackComposeDemoTheme
 import thanh.truong.jetpackcomposedemo.ui.theme.pink500
 
 class MainActivity : AppCompatActivity() {
 
-    private val viewModel: MainViewModel by viewModels()
-
+    @ExperimentalMaterialApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApp(viewModel = viewModel)
+            MyApp()
         }
     }
 }
 
 //region Basic
+@ExperimentalMaterialApi
 @Composable
-fun MyApp(viewModel: MainViewModel) {
+fun MyApp() {
+    val navController = rememberNavController()
     JetpackComposeDemoTheme {
-        Scaffold(
-            topBar = {
-                TopAppBar {
-                    Text(
-                        "Users",
-                        modifier = Modifier.padding(start = 10.dp),
-                        color = White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
-            },
-            content = {
-                MainScreen(viewModel = viewModel)
-            }
-        )
+        DemoNavHost(navController = navController, modifier = Modifier.fillMaxWidth())
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
-    val users: List<User> by viewModel.userListLive.observeAsState(initial = emptyList())
-    UsersList(modifier = Modifier.fillMaxWidth(), users = users, itemClickedCallback = {
-        // navigate to detail screen
-    })
+fun MainScreen(mainViewModel: MainViewModel = viewModel(), onUserClick: (String?) -> Unit) {
+    val users: List<User> by mainViewModel.userListLive.observeAsState(initial = emptyList())
+    Scaffold(
+        topBar = {
+            TopAppBar {
+                Text(
+                    "Users",
+                    modifier = Modifier.padding(start = 10.dp),
+                    color = White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+        },
+        content = {
+            UsersList(
+                modifier = Modifier.fillMaxWidth(),
+                users = users,
+                itemClickedCallback = { id ->
+                    onUserClick.invoke(id)
+                })
+        }
+    )
 }
 //endregion Basic
 
 //region Recyclerview
 
+@ExperimentalMaterialApi
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun UsersList(
     modifier: Modifier = Modifier,
     users: List<User>,
-    itemClickedCallback: () -> Unit
+    itemClickedCallback: (String?) -> Unit
 ) {
     // Use LazyRow when making horizontal lists
     Box(modifier) {
@@ -143,16 +149,19 @@ fun UsersList(
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
 fun UserItem(
     user: User,
-    onItemClicked: () -> Unit,
+    onItemClicked: (String?) -> Unit,
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onItemClicked },
-        elevation = 10.dp
+            .fillMaxWidth(),
+        elevation = 10.dp,
+        onClick = {
+            onItemClicked(user.id)
+        }
     ) {
         ConstraintLayout {
             val (image, divider, text, icon) = createRefs()
@@ -216,6 +225,7 @@ fun UserItem(
     }
 }
 
+@ExperimentalMaterialApi
 @Preview
 @Composable
 fun MyListPreview() {

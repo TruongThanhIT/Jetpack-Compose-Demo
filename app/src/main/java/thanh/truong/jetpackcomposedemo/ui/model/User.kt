@@ -1,5 +1,8 @@
 package thanh.truong.jetpackcomposedemo.ui.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class User(
     val id: String? = null,
     val title: String? = null,
@@ -14,6 +17,7 @@ data class User(
     val location: Location? = null,
 )
 
+@Keep
 data class Location(
     val street: String? = null,
     val city: String? = null,

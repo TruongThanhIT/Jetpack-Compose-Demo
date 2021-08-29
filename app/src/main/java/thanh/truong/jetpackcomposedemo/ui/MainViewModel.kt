@@ -1,36 +1,54 @@
 package thanh.truong.jetpackcomposedemo.ui
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import android.app.Application
+import androidx.lifecycle.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import thanh.truong.jetpackcomposedemo.ui.db.DemoDatabase
+import thanh.truong.jetpackcomposedemo.ui.db.UserDao
+import thanh.truong.jetpackcomposedemo.ui.db.UserEntity
 import thanh.truong.jetpackcomposedemo.ui.model.User
+import thanh.truong.jetpackcomposedemo.ui.network.ApiClient
+import java.util.*
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val userListLive: LiveData<List<User>>
         get() = _userListLive
     private val _userListLive = MutableLiveData<List<User>>()
+    private val userDao: UserDao = DemoDatabase.getUserDao(application)
 
     init {
-        getFakeData()
+        getUserList()
     }
 
-    private fun getFakeData() {
-        viewModelScope.launch(Dispatchers.Default) {
-            val testList = arrayListOf<User>()
-            repeat(20) {
-                testList += User(
-                    id = "$it",
-                    firstName = "FirstName $it",
-                    lastName = "Last $it",
-                    title = "ms",
-                    picture = "https://www.seekpng.com/png/detail/9-94457_vector-black-and-white-library-dogs-png-seafood.png"
+    private fun getUserList() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val response = ApiClient.getDummyService().getUsers()
+            if (response.isSuccessful) {
+                response.body()?.data?.let {
+                    val userEntities = it.map { userDto ->
+                        UserEntity(
+                            id = userDto.id ?: UUID.randomUUID().toString(),
+                            firstName = userDto.firstName,
+                            lastName = userDto.lastName,
+                            title = userDto.title,
+                            picture = userDto.picture
+                        )
+                    }
+                    userDao.insertUsers(*userEntities.toTypedArray())
+                }
+            }
+            val users = userDao.getAllUsers().map { userDto ->
+                User(
+                    id = userDto.id,
+                    firstName = userDto.firstName,
+                    lastName = userDto.lastName,
+                    title = userDto.title,
+                    picture = userDto.picture
                 )
             }
-            _userListLive.postValue(testList)
+            _userListLive.postValue(users)
         }
     }
 }
