@@ -11,7 +11,6 @@ import androidx.compose.material.icons.outlined.Female
 import androidx.compose.material.icons.outlined.Male
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import thanh.truong.jetpackcomposedemo.R
+import thanh.truong.jetpackcomposedemo.ui.model.Location
 import thanh.truong.jetpackcomposedemo.ui.model.User
 import thanh.truong.jetpackcomposedemo.ui.theme.orangeRed
 
@@ -236,5 +236,34 @@ fun UserDetailTopBar(onClose: () -> Unit, title: String) {
 @Preview
 @Composable
 fun UserDetailPreview() {
-    UserDetailScreen("1")
+    val user = User(
+        title = "Mr",
+        lastName = "Nguyen",
+        firstName = "Hung",
+        gender = "male",
+        email = "v.hungnpk@cloudhms.net",
+        dateOfBirth = "01/01/1994",
+        phone = "0912303002",
+        location = Location(
+            street = "188 Vo Thi Sau",
+            city = "District 1",
+            state = "Ho Chi Minh city",
+            country = "Vietnam"
+        )
+    )
+    Scaffold(
+        topBar = {
+            UserDetailTopBar(onClose = { }, title = "Customer information")
+        },
+        content = {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                UserDetailInfoCard(
+                    user = user,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                UserContactInfo(user = user, modifier = Modifier.fillMaxWidth())
+            }
+        }
+    )
 }
